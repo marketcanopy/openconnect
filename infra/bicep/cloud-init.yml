@@ -1,0 +1,65 @@
+#cloud-config
+package_update: true
+package_upgrade: false
+packages:
+  - ca-certificates
+  - curl
+  - docker.io
+  - docker-compose-v2
+
+write_files:
+  - path: /etc/openconnector/.env
+    owner: root:root
+    permissions: "0400"
+    content: |
+      OOMOL_CONNECT_ORIGIN=https://__CONNECTOR_HOSTNAME__
+      OOMOL_CONNECT_ENCRYPTION_KEY=__OPENCONNECTOR_ENCRYPTION_KEY__
+      OOMOL_CONNECT_ADMIN_TOKEN=__OPENCONNECTOR_ADMIN_TOKEN__
+      OOMOL_CONNECT_RUNTIME_TOKEN=__OPENCONNECTOR_RUNTIME_TOKEN__
+      OOMOL_CONNECT_LOG_LEVEL=info
+      TZ=UTC
+
+  - path: /etc/openconnector/docker-compose.yml
+    owner: root:root
+    permissions: "0444"
+    encoding: b64
+    content: __DOCKER_COMPOSE_BASE64__
+
+  - path: /etc/openconnector/Caddyfile
+    owner: root:root
+    permissions: "0444"
+    encoding: b64
+    content: __CADDYFILE_BASE64__
+
+  - path: /etc/systemd/system/openconnector.service
+    owner: root:root
+    permissions: "0444"
+    content: |
+      [Unit]
+      Description=OpenConnector connector gateway
+      Wants=network-online.target
+      After=network-online.target docker.service
+      Requires=docker.service
+
+      [Service]
+      Type=oneshot
+      RemainAfterExit=yes
+      WorkingDirectory=/etc/openconnector
+      ExecStartPre=/usr/bin/test -s /etc/openconnector/.env
+      ExecStart=/usr/bin/docker compose --env-file /etc/openconnector/.env -f /etc/openconnector/docker-compose.yml up -d
+      ExecStop=/usr/bin/docker compose --env-file /etc/openconnector/.env -f /etc/openconnector/docker-compose.yml stop
+      TimeoutStartSec=1800
+      TimeoutStopSec=180
+
+      [Install]
+      WantedBy=multi-user.target
+
+runcmd:
+  - [install, -d, -m, "0700", /etc/openconnector]
+  - [install, -d, -m, "0700", /var/lib/openconnector]
+  - [install, -d, -m, "0700", /var/lib/openconnector/data]
+  - [install, -d, -m, "0700", /var/lib/openconnector/caddy-data]
+  - [install, -d, -m, "0700", /var/lib/openconnector/caddy-config]
+  - [systemctl, daemon-reload]
+  - [systemctl, enable, --now, docker.service]
+  - [systemctl, enable, --now, openconnector.service]

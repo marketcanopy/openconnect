@@ -1,0 +1,8 @@
+# Deployment secrets must never leave this machine.
+.artifacts/**/openconnector-secrets.json
+
+# Bicep build output.
+infra/bicep/main.json
+
+# ZCode session data.
+.zcode/

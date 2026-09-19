@@ -1,0 +1,20 @@
+{
+    "schemaVersion":  1,
+    "deployedAtUtc":  "2026-09-19T15:33:43.4575654Z",
+    "subscriptionId":  "8864d84b-59a6-4989-b4e4-ad0437e320db",
+    "resourceGroup":  "us-west",
+    "region":  "westus3",
+    "deploymentName":  "openconnector-westus3",
+    "vmName":  "openconnector-westus3-vm",
+    "vmResourceId":  "/subscriptions/8864d84b-59a6-4989-b4e4-ad0437e320db/resourceGroups/us-west/providers/Microsoft.Compute/virtualMachines/openconnector-westus3-vm",
+    "publicIpv4Address":  "20.118.163.120",
+    "publicIpv4ResourceId":  "/subscriptions/8864d84b-59a6-4989-b4e4-ad0437e320db/resourceGroups/us-west/providers/Microsoft.Network/publicIPAddresses/openconnector-westus3-pip",
+    "publicIpv6Address":  "2603:1030:501:20::13",
+    "publicIpv6ResourceId":  "/subscriptions/8864d84b-59a6-4989-b4e4-ad0437e320db/resourceGroups/us-west/providers/Microsoft.Network/publicIPAddresses/openconnector-westus3-pip6",
+    "publicDnsName":  "openconnector-westus3-tue5mfaigxbge.westus3.cloudapp.azure.com",
+    "hostname":  "connector.marketcanopy.com",
+    "connectorImage":  "ghcr.io/oomol-lab/open-connector@sha256:346d5e7fbd652c787262199cfaf7af435d6db9cd7c52d3194532887815d49b39",
+    "certificateStatus":  "Caddy will obtain and renew the certificate after the hostname resolves to the reported addresses.",
+    "vmValidation":  "passed",
+    "secretsPath":  "C:\\Users\\dev\\repos\\openconnect\\.artifacts\\westus3\\openconnector-secrets.json"
+}

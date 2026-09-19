@@ -1,0 +1,40 @@
+services:
+  connector:
+    image: ghcr.io/oomol-lab/open-connector@sha256:346d5e7fbd652c787262199cfaf7af435d6db9cd7c52d3194532887815d49b39
+    container_name: openconnector-server
+    platform: linux/amd64
+    env_file:
+      - /etc/openconnector/.env
+    expose:
+      - "3000"
+    volumes:
+      - /var/lib/openconnector/data:/app/data
+    restart: unless-stopped
+    mem_limit: 8g
+    cpus: 2.5
+    logging:
+      driver: json-file
+      options:
+        max-size: 50m
+        max-file: "5"
+
+  caddy:
+    image: caddy@sha256:4c6e91c6ed0e2fa03efd5b44747b625fec79bc9cd06ac5235a779726618e530d
+    container_name: openconnector-caddy
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - /etc/openconnector/Caddyfile:/etc/caddy/Caddyfile:ro
+      - /var/lib/openconnector/caddy-data:/data
+      - /var/lib/openconnector/caddy-config:/config
+    depends_on:
+      - connector
+    restart: unless-stopped
+    mem_limit: 256m
+    cpus: 0.25
+    logging:
+      driver: json-file
+      options:
+        max-size: 20m
+        max-file: "5"

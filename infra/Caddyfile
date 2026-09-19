@@ -1,0 +1,8 @@
+{
+  email __ACME_EMAIL__
+}
+
+__CONNECTOR_HOSTNAME__ {
+  encode gzip
+  reverse_proxy connector:3000
+}
