@@ -2,7 +2,7 @@
 
 This repository deploys [oomol-lab/open-connector](https://github.com/oomol-lab/open-connector)
 to one isolated, dual-stack Ubuntu VM. The VM runs the OpenConnector gateway
-(image pinned to the `v1.6.1` release digest) and Caddy in Docker Compose.
+(image pinned to the `v1.8.0` release digest) and Caddy in Docker Compose.
 OpenConnector uses its built-in SQLite storage on the VM disk; only HTTP/HTTPS
 and operator SSH are allowed through the Azure NSG.
 
@@ -60,7 +60,7 @@ Before applying, provide:
 6. An email address for ACME certificate notices.
 7. Agreement on the pinned container images. The script currently pins the
    `ghcr.io/oomol-lab/open-connector` digest corresponding to release
-   `v1.6.1`; Caddy is pinned by digest in `infra/docker-compose.yml`. Change
+   `v1.8.0`; Caddy is pinned by digest in `infra/docker-compose.yml`. Change
    any image only after testing the replacement.
 
 The script generates and stores the credential-encryption key, the Web Console
