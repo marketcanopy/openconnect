@@ -1,10 +1,10 @@
 diff --git a/src/server/api/connection-routes.test.ts b/src/server/api/connection-routes.test.ts
-index f8f44db..9d36e1f 100644
+index ea7930e..ecfafb3 100644
 --- a/src/server/api/connection-routes.test.ts
 +++ b/src/server/api/connection-routes.test.ts
-@@ -442,3 +442,67 @@ it("connects Slack using granted scopes from the nested user token response", as
-   expect(connection.scopes).toEqual(["channels:read", "users:read"]);
-   expect(fetcher).toHaveBeenCalledTimes(2);
+@@ -629,3 +629,67 @@ it("accepts the SP-API authorization code alias only with a valid unconsumed OAu
+   ).toBe(200);
+   expect((await call(`/oauth/callback?state=${request.stateHandle}&spapi_oauth_code=again`)).status).toBe(400);
  });
 +
 +describe("connection requests per caller (X-Connect-Owner)", () => {
@@ -71,7 +71,7 @@ index f8f44db..9d36e1f 100644
 +  });
 +});
 diff --git a/src/server/api/connection-routes.ts b/src/server/api/connection-routes.ts
-index 5ec60cb..78eaf35 100644
+index fd17d53..ce7beb9 100644
 --- a/src/server/api/connection-routes.ts
 +++ b/src/server/api/connection-routes.ts
 @@ -1,6 +1,7 @@

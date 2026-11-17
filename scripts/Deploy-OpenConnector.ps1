@@ -40,8 +40,8 @@ if ($Apply -xor $Confirm) {
 if ([string]::IsNullOrWhiteSpace($VnetIpv6AddressPrefix) -or [string]::IsNullOrWhiteSpace($SubnetIpv6AddressPrefix)) {
     throw 'VnetIpv6AddressPrefix and SubnetIpv6AddressPrefix are required. Use the IPv6 prefix allocated for this Azure VNet.'
 }
-if ($ConnectorImage -notmatch '^ghcr\.io/(oomol-lab|circuitid)/open-connector@sha256:[0-9a-f]{64}$') {
-    throw 'ConnectorImage must be pinned to an immutable ghcr.io/oomol-lab/open-connector or ghcr.io/circuitid/open-connector sha256 digest.'
+if ($ConnectorImage -notmatch '^ghcr\.io/(oomol-lab|marketcanopy)/open-connector@sha256:[0-9a-f]{64}$') {
+    throw 'ConnectorImage must be pinned to an immutable ghcr.io/oomol-lab/open-connector or ghcr.io/marketcanopy/open-connector sha256 digest.'
 }
 if ($ConnectorHostname -notmatch '^(?=.{1,253}$)([A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?\.)+[A-Za-z]{2,63}$') {
     throw 'ConnectorHostname must be a fully-qualified DNS hostname.'
