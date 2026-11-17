@@ -21,10 +21,10 @@ permissions:
 
 env:
   UPSTREAM_REPOSITORY: oomol-lab/open-connector
-  UPSTREAM_TAG: v1.8.0
-  UPSTREAM_COMMIT: cdd4b5970fc3109d639e0b19d2913a586355ee9d
-  IMAGE: ghcr.io/circuitid/open-connector
-  IMAGE_TAG: v1.8.0-owner.1
+  UPSTREAM_TAG: v1.10.0
+  UPSTREAM_COMMIT: dc90106c23383e5311a2710153971e95290b85a3
+  IMAGE: ghcr.io/marketcanopy/open-connector
+  IMAGE_TAG: v1.10.0-owner.1
 
 jobs:
   build:

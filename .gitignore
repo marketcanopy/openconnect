@@ -1,5 +1,5 @@
-# Deployment secrets must never leave this machine.
-.artifacts/**/openconnector-secrets.json
+# Deployment output (secrets, what-if, receipts) must never leave this machine.
+.artifacts/
 
 # Bicep build output.
 infra/bicep/main.json
