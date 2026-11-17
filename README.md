@@ -2,7 +2,8 @@
 
 This repository deploys [oomol-lab/open-connector](https://github.com/oomol-lab/open-connector)
 to one isolated, dual-stack Ubuntu VM. The VM runs the OpenConnector gateway
-(image pinned to the `v1.8.0` release digest) and Caddy in Docker Compose.
+(upstream `v1.10.0` with `patches/connection-owner.patch`, built by
+`.github/workflows/broker-image.yml` and pinned by digest) and Caddy in Docker Compose.
 OpenConnector uses its built-in SQLite storage on the VM disk; only HTTP/HTTPS
 and operator SSH are allowed through the Azure NSG.
 
@@ -58,10 +59,13 @@ Before applying, provide:
    The script intentionally requires them.
 5. Confirmation of the default hostname, or a replacement for it.
 6. An email address for ACME certificate notices.
-7. Agreement on the pinned container images. The script currently pins the
-   `ghcr.io/oomol-lab/open-connector` digest corresponding to release
-   `v1.8.0`; Caddy is pinned by digest in `infra/docker-compose.yml`. Change
-   any image only after testing the replacement.
+7. Agreement on the pinned container images. The script currently pins
+   `ghcr.io/marketcanopy/open-connector@sha256:9ee89f53991f1f80682426b6156bb5be3f293d324a339397d923d90d6f39178a`
+   (`v1.10.0-owner.1`: upstream `v1.10.0` plus the owner patch, a public
+   package); Caddy is pinned by digest in `infra/docker-compose.yml`. Change
+   any image only after testing the replacement. Upstream releases can add
+   forward-only SQLite migrations, so snapshot the VM's OS disk before an
+   upgrade.
 
 The script generates and stores the credential-encryption key, the Web Console
 admin token, and the runtime API token in a Windows ACL-protected file under

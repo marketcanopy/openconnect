@@ -22,7 +22,7 @@ param(
     [string] $VmSize = 'Standard_D4s_v5',
     [string] $ConnectorHostname = 'connector.marketcanopy.com',
     [string] $AcmeEmail = 'help@marketcanopy.com',
-    [string] $ConnectorImage = 'ghcr.io/oomol-lab/open-connector@sha256:61e5e29a9ae7d8e817e8050d062ed57134e069cea3e7eef7cb15349c11b7a76d',
+    [string] $ConnectorImage = 'ghcr.io/marketcanopy/open-connector@sha256:9ee89f53991f1f80682426b6156bb5be3f293d324a339397d923d90d6f39178a',
     [string] $ConnectorEncryptionKey,
     [string] $ConnectorAdminToken,
     [string] $ConnectorRuntimeToken,
