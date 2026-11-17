@@ -1,0 +1,116 @@
+diff --git a/src/server/api/connection-routes.test.ts b/src/server/api/connection-routes.test.ts
+index f8f44db..9d36e1f 100644
+--- a/src/server/api/connection-routes.test.ts
++++ b/src/server/api/connection-routes.test.ts
+@@ -442,3 +442,67 @@ it("connects Slack using granted scopes from the nested user token response", as
+   expect(connection.scopes).toEqual(["channels:read", "users:read"]);
+   expect(fetcher).toHaveBeenCalledTimes(2);
+ });
++
++describe("connection requests per caller (X-Connect-Owner)", () => {
++  const adminToken = "admin-secret";
++  async function owned() {
++    const { app, call } = await setup(undefined, { adminToken });
++    const as = (owner: string | undefined, path: string, body?: unknown) =>
++      app.request(path, {
++        method: body === undefined ? "GET" : "POST",
++        headers: {
++          "content-type": "application/json",
++          authorization: `Bearer ${adminToken}`,
++          ...(owner === undefined ? {} : { "x-connect-owner": owner }),
++        },
++        body: body === undefined ? undefined : JSON.stringify(body),
++      });
++    const startAs = async (owner: string | undefined) =>
++      (await (await as(owner, "/v1/connections/example/connect", {})).json()).data;
++    const statusAs = async (owner: string | undefined, id: string) => as(owner, `/v1/connection-requests/${id}`);
++    return { call, startAs, statusAs };
++  }
++
++  it("does not supersede another owner's request, and each owner reads only its own", async () => {
++    const { call, startAs, statusAs } = await owned();
++    const a = await startAs("org-1:user-a");
++    const b = await startAs("org-1:user-b");
++    expect((await (await statusAs("org-1:user-a", a.connectionRequestId)).json()).data.status).toBe("initiated");
++    expect((await (await statusAs("org-1:user-b", b.connectionRequestId)).json()).data.status).toBe("initiated");
++    expect((await statusAs("org-1:user-b", a.connectionRequestId)).status).toBe(404);
++    expect((await statusAs(undefined, a.connectionRequestId)).status).toBe(404);
++    expect((await call(`/oauth/callback?state=${a.stateHandle}&code=code-a`)).status).toBe(200);
++    expect((await (await statusAs("org-1:user-a", a.connectionRequestId)).json()).data.status).toBe("connected");
++    expect((await call(`/oauth/callback?state=${b.stateHandle}&code=code-b`)).status).toBe(200);
++    expect((await (await statusAs("org-1:user-b", b.connectionRequestId)).json()).data.status).toBe("connected");
++  });
++
++  it("keeps superseding one owner's own earlier request and refuses its callback", async () => {
++    const { call, startAs, statusAs } = await owned();
++    const first = await startAs("org-2:user-a");
++    await startAs("org-2:user-a");
++    expect((await (await statusAs("org-2:user-a", first.connectionRequestId)).json()).data).toMatchObject({
++      status: "failed",
++      errorCode: "request_superseded",
++    });
++    expect((await call(`/oauth/callback?state=${first.stateHandle}&code=old`)).status).toBe(400);
++  });
++
++  it("refuses a callback after the request expired", async () => {
++    vi.useFakeTimers();
++    const { call, startAs } = await owned();
++    const request = await startAs("org-3:user-a");
++    vi.setSystemTime(Date.parse(request.expiresAt));
++    expect((await call(`/oauth/callback?state=${request.stateHandle}&code=late`)).status).toBe(400);
++  });
++
++  it("keeps upstream's single owner without the header", async () => {
++    const { startAs, statusAs } = await owned();
++    const first = await startAs(undefined);
++    const second = await startAs("  ");
++    expect((await (await statusAs(undefined, first.connectionRequestId)).json()).data.errorCode).toBe(
++      "request_superseded",
++    );
++    expect((await (await statusAs(undefined, second.connectionRequestId)).json()).data.status).toBe("initiated");
++  });
++});
+diff --git a/src/server/api/connection-routes.ts b/src/server/api/connection-routes.ts
+index 5ec60cb..78eaf35 100644
+--- a/src/server/api/connection-routes.ts
++++ b/src/server/api/connection-routes.ts
+@@ -1,6 +1,7 @@
+ import type { ConnectionService } from "../../connection-service.ts";
+ import type { OAuthFlowService } from "../../oauth/oauth-flow-service.ts";
+ import type { SaasOAuthService } from "../../saas/saas-oauth-service.ts";
++import type { Context } from "hono";
+ import type { z } from "zod";
+ 
+ import { Hono } from "hono";
+@@ -27,7 +28,13 @@ interface ConnectionRoutesOptions {
+ export function createConnectionRoutes({ connections, oauthFlow, saasOAuth }: ConnectionRoutesOptions): Hono {
+   const app = new Hono();
+   // The local runtime has one administrator principal, including its bearer and browser sessions.
+-  const owner = "local-admin";
++  // Modified by Market Canopy: an admin-bearer caller may name the person a request belongs to
++  // (X-Connect-Owner), so two people's consents do not supersede each other. The header is
++  // trusted only with the admin bearer; without it the owner is upstream's single one.
++  const ownerOf = (context: Context): string => {
++    const caller = hasAdminBearer(context) ? context.req.header("x-connect-owner")?.trim() : undefined;
++    return caller ? `local-admin:${caller}` : "local-admin";
++  };
+   app.onError((error, context) => {
+     if (error instanceof SaasError) {
+       if (error.retryAfter) context.header("Retry-After", error.retryAfter);
+@@ -61,6 +68,7 @@ export function createConnectionRoutes({ connections, oauthFlow, saasOAuth }: Co
+   });
+   app.get("/connection-requests/:connectionRequestId", async (context) => {
+     const id = context.req.param("connectionRequestId");
++    const owner = ownerOf(context);
+     const request =
+       saasOAuth && hasAdminBearer(context)
+         ? await saasOAuth.sync(id, owner, context.req.raw.signal)
+@@ -84,7 +92,7 @@ export function createConnectionRoutes({ connections, oauthFlow, saasOAuth }: Co
+         await oauthFlow.startConnectionRequest({
+           ...input,
+           service: target?.service ?? context.req.param("service")!,
+-          owner,
++          owner: ownerOf(context),
+           signal: context.req.raw.signal,
+           target,
+         }),
