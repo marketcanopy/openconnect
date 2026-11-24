@@ -61,8 +61,8 @@ Before applying, provide:
 5. Confirmation of the default hostname, or a replacement for it.
 6. An email address for ACME certificate notices.
 7. Agreement on the pinned container images. The script currently pins
-   `ghcr.io/marketcanopy/open-connector@sha256:9ee89f53991f1f80682426b6156bb5be3f293d324a339397d923d90d6f39178a`
-   (`v1.10.0-owner.1`: upstream `v1.10.0` plus the owner patch, a public
+   `ghcr.io/marketcanopy/open-connector@sha256:b10771e47dda20632b3a8495536540d300a634bd4576d7ad0288f4a969b9cee4`
+   (`v1.10.0-owner.2`: upstream `v1.10.0` plus the owner and shared-mailbox scope patches, a public
    package); Caddy is pinned by digest in `infra/docker-compose.yml`. Change
    any image only after testing the replacement. Upstream releases can add
    forward-only SQLite migrations, so snapshot the VM's OS disk before an
