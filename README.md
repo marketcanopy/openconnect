@@ -2,7 +2,8 @@
 
 This repository deploys [oomol-lab/open-connector](https://github.com/oomol-lab/open-connector)
 to one isolated, dual-stack Ubuntu VM. The VM runs the OpenConnector gateway
-(upstream `v1.10.0` with `patches/connection-owner.patch`, built by
+(upstream `v1.10.0` with `patches/connection-owner.patch` and
+`patches/outlook-shared-mailbox-scopes.patch`, built by
 `.github/workflows/broker-image.yml` and pinned by digest) and Caddy in Docker Compose.
 OpenConnector uses its built-in SQLite storage on the VM disk; only HTTP/HTTPS
 and operator SSH are allowed through the Azure NSG.
