@@ -1,0 +1,61 @@
+diff --git a/src/providers/outlook/scopes.test.ts b/src/providers/outlook/scopes.test.ts
+index 9ded2d7..b17baed 100644
+--- a/src/providers/outlook/scopes.test.ts
++++ b/src/providers/outlook/scopes.test.ts
+@@ -45,6 +45,12 @@ describe("Outlook OAuth scopes", () => {
+     expect(service.getEffectiveScopes("outlook", config)).toEqual(outlookOAuthScopes);
+   });
+ 
++  it("declares the shared-mailbox and directory scopes in the default grant", () => {
++    expect(outlookOAuthScopes).toEqual(
++      expect.arrayContaining(["Mail.ReadWrite.Shared", "Mail.Send.Shared", "User.ReadBasic.All"]),
++    );
++  });
++
+   it.each(readerActions)("%s is satisfied by the read-only grant", (name) => {
+     const { requiredScopes, providerPermissions } = action(name);
+ 
+diff --git a/src/providers/outlook/scopes.ts b/src/providers/outlook/scopes.ts
+index 661dcd2..13f9d4d 100644
+--- a/src/providers/outlook/scopes.ts
++++ b/src/providers/outlook/scopes.ts
+@@ -7,6 +7,9 @@ export const outlookProviderScopes = {
+   mailReadBasic: "Mail.ReadBasic",
+   mailboxSettingsRead: "MailboxSettings.Read",
+   offlineAccess: "offline_access",
++  mailReadWriteShared: "Mail.ReadWrite.Shared",
++  mailSendShared: "Mail.Send.Shared",
++  userReadBasicAll: "User.ReadBasic.All",
+ } as const;
+ 
+ // Reading the mailbox — the profile, the root folders, the message list and one
+@@ -30,4 +33,10 @@ export const outlookOAuthScopes: string[] = [
+   outlookProviderScopes.mailSend,
+   outlookProviderScopes.mailboxSettingsReadWrite,
+   outlookProviderScopes.offlineAccess,
++  // Market Canopy patch: reach a shared mailbox the person holds Full Access
++  // and Send As on through the proxy (/users/{mailbox}/...), and search the
++  // directory for the mailboxes they can open. None needs administrator consent.
++  outlookProviderScopes.mailReadWriteShared,
++  outlookProviderScopes.mailSendShared,
++  outlookProviderScopes.userReadBasicAll,
+ ];
+diff --git a/src/providers/outlook_calendar/scopes.ts b/src/providers/outlook_calendar/scopes.ts
+index 0115674..ffedee4 100644
+--- a/src/providers/outlook_calendar/scopes.ts
++++ b/src/providers/outlook_calendar/scopes.ts
+@@ -3,6 +3,7 @@ const outlookCalendarProviderScopes = {
+   calendarsReadWrite: "Calendars.ReadWrite",
+   calendarsReadWriteShared: "Calendars.ReadWrite.Shared",
+   offlineAccess: "offline_access",
++  userReadBasicAll: "User.ReadBasic.All",
+ };
+ 
+ export const outlookCalendarProfileScopes: string[] = [outlookCalendarProviderScopes.userRead];
+@@ -13,4 +14,6 @@ export const outlookCalendarOAuthScopes: string[] = [
+   outlookCalendarProviderScopes.calendarsReadWrite,
+   outlookCalendarProviderScopes.calendarsReadWriteShared,
+   outlookCalendarProviderScopes.offlineAccess,
++  // Market Canopy patch: search the directory for the calendars the person can open.
++  outlookCalendarProviderScopes.userReadBasicAll,
+ ];
